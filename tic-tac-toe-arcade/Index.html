@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tic-Tac-Toe Arcade</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="setup">
+    <h1>Tic-Tac-Toe Arcade</h1>
+    <label>Player 1 Name: <input id="player1" /></label><br/>
+    <label>Player 2 Name (leave blank to play vs Sara): <input id="player2" /></label><br/>
+    <button id="startGame">Start Game</button>
+  </div>
+
+  <div id="game" style="display:none;">
+    <h2 id="status">Game Status</h2>
+    <div class="board" id="board"></div>
+    <button id="reset">Restart Game</button>
+    <div class="scoreboard">
+      <p id="scoreX">Player 1: 0</p>
+      <p id="scoreO">Player 2: 0</p>
+    </div>
+  </div>
+
+  <audio id="moveSound" src="move.wav"></audio>
+  <audio id="winSound" src="win.wav"></audio>
+  <audio id="drawSound" src="draw.wav"></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
