@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <title>Data Analyst Portfolio - Your Name</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <!-- Navigation -->
+  <header>
+    <nav class="navbar">
+      <h1 class="logo">Sachin</h1>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="https://sachin-indian.github.io/">Home</a></li>
+        </ul>
+      <!-- Mobile Menu Toggle -->
+      <div class="menu-toggle" id="menuToggle">☰</div>
+      <!-- Theme Toggle -->
+      <button id="themeToggle" class="theme-btn">🌙</button>
+    </nav>
+  </header>
+
+
+<!-- Centering Wrapper -->
+  <div class="center-wrapper">
+  <div id="setup">
+    <h1>Tic-Tac-Toe Arcade</h1>
+    <label>Player 1 Name: <input id="player1" /></label><br/>
+    <label>Player 2 Name (leave blank to play vs Sara): <input id="player2" /></label><br/>
+    <button id="startGame">Start Game</button>
+  </div>
+
+  <div id="game" style="display:none;">
+    <h2 id="status">Game Status</h2>
+    <div class="board" id="board"></div>
+    <button id="reset">Restart Game</button>
+    <div class="scoreboard">
+      <p id="scoreX">Player 1: 0</p>
+      <p id="scoreO">Player 2: 0</p>
+    </div>
+  </div>
+</div>
+
+<!-- Audio and Footer -->
+  <audio id="moveSound" src="move.wav"></audio>
+  <audio id="winSound" src="win.wav"></audio>
+  <audio id="drawSound" src="draw.wav"></audio>
+
+  <script src="script.js"></script>
+<!-- Footer -->
+  <footer>
+    <p>© 2025 Sachin | Data Analyst Portfolio</p>
+    <div class="social-links">
+      <a href="https://www.linkedin.com/in/Sachin-Indian/" target="_blank">LinkedIn</a>
+      <a href="https://github.com/Sachin-Indian" target="_blank">GitHub</a>
+    </div>
+  </footer>
+
+</body>
+</html>
