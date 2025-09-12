@@ -175,7 +175,7 @@ footer .social-links a {
 @media (max-width: 768px) {
   .nav-links {
     display: none;
-    flex-direction: column;
+    flex-direction: row;
     background: var(--nav-bg);
     position: absolute;
     top: 60px; right: 0;
@@ -196,3 +196,4 @@ footer .social-links a {
   white-space: nowrap;
   overflow: hidden;
 }
+
