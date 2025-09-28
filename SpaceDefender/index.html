@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Space Defender JS | Sachin's Arcade</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <style>
+    /* Your full portfolio CSS pasted here */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
+    }
+    :root {
+      --bg-color: #f4f4f9;
+      --text-color: #333;
+      --card-bg: #fff;
+      --nav-bg: #222;
+      --btn-bg: #222;
+      --btn-text: #fff;
+    }
+    body.dark {
+      --bg-color: #121212;
+      --text-color: #f1f1f1;
+      --card-bg: #1e1e1e;
+      --nav-bg: #333;
+      --btn-bg: #00bcd4;
+      --btn-text: #000;
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--nav-bg);
+      color: var(--btn-text);
+      padding: 15px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .navbar .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+    .navbar .nav-links a {
+      color: var(--btn-text);
+      text-decoration: none;
+    }
+    .navbar .nav-links a:hover {
+      color: #00bcd4;
+    }
+    .menu-toggle { display: none; font-size: 1.8em; cursor: pointer; color: #fff; }
+    .theme-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.4em;
+      cursor: pointer;
+      margin-left: 10px;
+      color: #ffd700;
+    }
+    footer {
+      background: var(--nav-bg);
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    footer .social-links a {
+      color: #00bcd4;
+      margin: 0 8px;
+      text-decoration: none;
+    }
+    .center-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 80vh;
+    }
+
+    /* Space Defender Game Styles */
+    #gameWrapper {
+      position: relative;
+      width: 480px;
+      height: 640px;
+      background: black;
+    }
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 8px;
+      border-radius: 8px;
+      display: none;
+    }
+    #controls button {
+      padding: 8px 16px;
+      font-size: 14px;
+      margin: 0 5px;
+      background: #222;
+      color: white;
+      border: 1px solid #555;
+      cursor: pointer;
+    }
+    #laserBtn { margin-left: 15px; }
+    #titleScreen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      text-align: center;
+      padding-top: 200px;
+      z-index: 10;
+    }
+    #titleScreen h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+      animation: fadeIn 2s ease-in-out;
+      color: white;
+    }
+    #titleScreen p {
+      font-size: 20px;
+      animation: blink 1s infinite;
+      color: white;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    #gameOverScreen {
+      display: none;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      text-align: center;
+      padding-top: 200px;
+      z-index: 10;
+    }
+    #gameOverScreen button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 20px;
+      background: #444;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <nav class="navbar">
+      <h1 class="logo">Sachin</h1>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="https://sachin-indian.github.io/">Home</a></li>
+      </ul>
+      <div class="menu-toggle" id="menuToggle">☰</div>
+      <button id="themeToggle" class="theme-btn">🌙</button>
+    </nav>
+  </header>
+
+  <!-- Game Section -->
+  <div class="center-wrapper">
+    <div id="gameWrapper">
+      <canvas id="gameCanvas" width="480" height="640"></canvas>
+
+      <div id="titleScreen">
+        <h1>🚀 Space Defender JS</h1>
+        <p>A recruiter-ready arcade shooter built by Sachin</p>
+        <p>Press Enter to Start</p>
+        <p style="color:#ffd700; font-size:18px;">Controls: [←][→] Move | [A] Auto-Fire | [Space] Laser | [P] Pause | [R] Restart</p>
+      </div>
+
+      <div id="pauseOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:20; text-align:center;">
+        <h2 style="margin-top:220px; color:#ffd700; font-size:48px;">PAUSED</h2>
+        <p style="color:white; font-size:20px;">Press [P] to Resume</p>
+        <p style="color:#ffd700; font-size:18px;">Shortcuts: [A] Auto-Fire | [Space] Laser | [R] Restart</p>
+      </div>
+
+      <div id="gameOverScreen" style="display:none;">
+        <h2 style="font-size:48px; color:#ff4444;">Game Over</h2>
+        <p id="finalScore" style="font-size:22px; color:#ffd700;"></p>
+        <button onclick="restartGame()" style="font-size:20px; margin-top:30px;">Restart</button>
+        <p style="color:white; font-size:18px;">Shortcuts: [R] Restart | [Enter] Start</p>
+      </div>
+      <script>
+        function spawnEnemy() {
+        const types = ['fast', 'zigzag', 'shielded'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        const x = Math.random() * (canvas.width - 30);
+        let speed = 2 + stage * 0.5;
+        if (type === 'fast') speed += 2;
+        enemies.push({ x, y: -30, width: 30, height: 30, speed, type, killed: false });
+        }
+        // const canvas = document.getElementById('gameCanvas');
+        // const ctx = canvas.getContext('2d');
+
+        // Game state
+        let gameStarted = false;
+        let isPaused = false;
+        let autoFire = true;
+        let player = { x: 220, y: 580, width: 40, height: 20, health: 3, shielded: false };
+        let bullets = [];
+        let enemies = [];
+        let shields = [];
+        let powerUps = [];
+        let boss = null;
+        let bossBullets = [];
+        let bombs = [];
+        let keys = {};
+        let score = 0;
+        let highScore = localStorage.getItem('highScore') || 0;
+        let stage = 1;
+        let flashTimer = 0;
+        let bulletCooldown = 0;
+        let gameLoopId;
+        let gameOverTriggered = false;
+        let laserActive = false;
+        let laserTimer = 0;
+        let bossExplosion = null;
+        let starfield = [];
+        let speedBoost = false;
+        let doubleBullets = false;
+        let scoreMultiplier = 1;
+
+        // Load sounds
+        const laserSound = new Audio('laser.mp3');
+        const shieldSound = new Audio('shield.mp3');
+        const explosionSound = new Audio('explosion.mp3');
+
+        // Title screen logic
+        document.addEventListener('keydown', e => {
+        keys[e.key] = true;
+
+        if (e.key === 'Enter' && !gameStarted) {
+            gameStarted = true;
+            document.getElementById('titleScreen').style.display = 'none';
+            cancelAnimationFrame(gameLoopId); // ✅ Prevent double loop
+            loop(); // ✅ Start clean loop
+        }
+
+        if (e.key === ' ' && gameStarted) {
+            laserActive = true;
+            laserTimer = 20;
+            laserSound.play();
+        }
+        });
+        document.addEventListener('keyup', e => keys[e.key] = false);
+
+        // Touch controls
+        canvas.addEventListener('touchstart', e => {
+        const touch = e.touches[0];
+        const x = touch.clientX;
+        if (x < canvas.width / 3) keys['ArrowLeft'] = true;
+        else if (x > canvas.width * 2 / 3) keys['ArrowRight'] = true;
+        else laserActive = true, laserTimer = 20, laserSound.play();
+        });
+        canvas.addEventListener('touchend', () => {
+        keys['ArrowLeft'] = false;
+        keys['ArrowRight'] = false;
+        });
+
+        // Laser button for mobile
+        document.getElementById('laserBtn').onclick = () => {
+        laserActive = true;
+        laserTimer = 20;
+        laserSound.play();
+        };
+
+        // Starfield background
+        for (let i = 0; i < 100; i++) {
+        starfield.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            speed: 1 + Math.random() * 2
+        });
+        }
+        </script>
+
+        <script>
+
+        function spawnShield() {
+        const x = Math.random() * (canvas.width - 30);
+        shields.push({ x, y: -30, width: 30, height: 30, speed: 2 });
+        }
+        function spawnBoss() {
+        boss = {
+            x: Math.random() * (canvas.width - 100),
+            y: -60,
+            width: 100,
+            height: 60,
+            speed: 1 + stage * 0.2,
+            health: 20 + stage * 10
+        };
+        }
+        function update() {
+        if (gameOverTriggered || !gameStarted) return;
+
+        // Player movement
+        if (keys['ArrowLeft']) player.x -= speedBoost ? 8 : 5;
+        if (keys['ArrowRight']) player.x += speedBoost ? 8 : 5;
+        player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+
+        // Bullet firing
+        bulletCooldown--;
+        if (autoFire && bulletCooldown <= 0) {
+            bullets.push({ x: player.x + player.width / 2 - 2, y: player.y, width: 4, height: 10 });
+            if (doubleBullets) {
+            bullets.push({ x: player.x + 5, y: player.y, width: 4, height: 10 });
+            bullets.push({ x: player.x + player.width - 9, y: player.y, width: 4, height: 10 });
+            }
+            bulletCooldown = 10;
+        }
+
+        // Update bullets
+        bullets.forEach(b => b.y -= 6);
+        bullets = bullets.filter(b => b.y > -10);
+
+        // Laser logic
+        if (laserActive && laserTimer > 0) {
+            enemies.forEach(e => {
+            if (!e.killed && Math.abs(e.x + e.width / 2 - player.x - player.width / 2) < 10) {
+                e.killed = true;
+                score += 10 * scoreMultiplier;
+            }
+            });
+            if (boss && Math.abs(boss.x + boss.width / 2 - player.x - player.width / 2) < 10) {
+            boss.health -= 2;
+            if (boss.health <= 0) {
+                score += 100 * scoreMultiplier;
+                explosionSound.play();
+                bossExplosion = { x: boss.x, y: boss.y, timer: 20 };
+                boss = null;
+                stage++;
+            }
+            }
+            laserTimer--;
+            if (laserTimer <= 0) laserActive = false;
+        }
+
+        // Bullet collisions
+        bullets.forEach(b => {
+            enemies.forEach(e => {
+            if (!e.killed && b.x < e.x + e.width && b.x + b.width > e.x &&
+                b.y < e.y + e.height && b.y + b.height > e.y) {
+                e.killed = true;
+                score += 10 * scoreMultiplier;
+            }
+            });
+            if (boss && b.x < boss.x + boss.width && b.x + b.width > boss.x &&
+                b.y < boss.y + boss.height && b.y + b.height > boss.y) {
+            boss.health--;
+            score += 10 * scoreMultiplier;
+            if (boss.health <= 0) {
+                score += 100 * scoreMultiplier;
+                explosionSound.play();
+                bossExplosion = { x: boss.x, y: boss.y, timer: 20 };
+                boss = null;
+                stage++;
+            }
+            }
+        });
+
+        // Update enemies
+        enemies.forEach(e => {
+            if (!e.killed) {
+            if (e.type === 'zigzag') e.x += Math.sin(e.y / 20) * 2;
+            e.y += e.speed;
+            }
+        });
+
+        enemies = enemies.filter(e => {
+            if (e.killed) return false;
+            if (e.y > canvas.height) {
+            if (!player.shielded) {
+                player.health--;
+                flashTimer = 10;
+            }
+            return false;
+            }
+            return true;
+        });
+
+        // Update boss
+        if (boss) {
+            boss.x += Math.sin(Date.now() / 500) * 2;
+            boss.y += boss.speed;
+            if (Math.random() < 0.02) {
+            bossBullets.push({ x: boss.x + boss.width / 2 - 5, y: boss.y + boss.height, width: 10, height: 10 });
+            }
+            if (Math.random() < 0.01) {
+            bombs.push({ x: boss.x + Math.random() * boss.width, y: boss.y + boss.height, radius: 15 });
+            }
+            if (boss.y > canvas.height) boss = null;
+        }
+
+        // Update boss bullets
+        bossBullets.forEach(b => b.y += 4);
+        bossBullets = bossBullets.filter(b => {
+            if (b.y > canvas.height) return false;
+            if (b.x < player.x + player.width && b.x + b.width > player.x &&
+                b.y < player.y + player.height && b.y + b.height > player.y) {
+            if (!player.shielded) {
+                player.health--;
+                flashTimer = 10;
+            }
+            return false;
+            }
+            return true;
+        });
+
+        // Update bombs
+        bombs.forEach(b => b.y += 3);
+        bombs = bombs.filter(b => {
+            if (b.y > canvas.height) return false;
+            const dx = b.x - (player.x + player.width / 2);
+            const dy = b.y - (player.y + player.height / 2);
+            if (Math.sqrt(dx * dx + dy * dy) < b.radius + player.width / 2) {
+            if (!player.shielded) {
+                player.health--;
+                flashTimer = 10;
+            }
+            return false;
+            }
+            return true;
+        });
+
+        // Update shields
+        shields.forEach(s => s.y += s.speed);
+        shields = shields.filter(s => {
+            if (s.y > canvas.height) return false;
+            if (s.x < player.x + player.width && s.x + s.width > player.x &&
+                s.y < player.y + player.height && s.y + s.height > player.y) {
+            player.shielded = true;
+            shieldSound.play();
+            setTimeout(() => player.shielded = false, 5000);
+            return false;
+            }
+            return true;
+        });
+
+        // Update power-ups
+        powerUps.forEach(p => p.y += p.speed);
+        powerUps = powerUps.filter(p => {
+            if (p.y > canvas.height) return false;
+            if (p.x < player.x + player.width && p.x + p.width > player.x &&
+                p.y < player.y + player.height && p.y + p.height > player.y) {
+            if (p.effect === 'speed') speedBoost = true, setTimeout(() => speedBoost = false, 5000);
+            if (p.effect === 'double') doubleBullets = true, setTimeout(() => doubleBullets = false, 5000);
+            if (p.effect === 'score') scoreMultiplier = 2, setTimeout(() => scoreMultiplier = 1, 5000);
+            return false;
+            }
+            return true;
+        });
+
+        // Spawn logic
+        if (Math.random() < 0.01 + stage * 0.002) spawnEnemy();
+        if (score >= stage * 100 && !boss) spawnBoss();
+        if (Math.random() < 0.002) spawnShield();
+        if (Math.random() < 0.003) spawnPowerUp();
+
+        // Game over
+        if (player.health <= 0 && !gameOverTriggered) {
+            gameOverTriggered = true;
+            if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('highScore', highScore);
+            }
+            document.getElementById('finalScore').textContent = `Final Score: ${score} | High Score: ${highScore}`;
+            document.getElementById('gameOverScreen').style.display = 'block';
+            cancelAnimationFrame(gameLoopId);
+        }
+        }
+        </script>
+
+        <script>
+        function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 🌌 Starfield background
+        ctx.fillStyle = 'white';
+        starfield.forEach(star => {
+            ctx.fillRect(star.x, star.y, 2, 2);
+            star.y += star.speed;
+            if (star.y > canvas.height) {
+            star.y = 0;
+            star.x = Math.random() * canvas.width;
+            }
+        });
+
+        // ⚡ Flash effect
+        if (flashTimer > 0) {
+            ctx.fillStyle = 'rgba(255,0,0,0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            flashTimer--;
+        }
+
+        // 🔫 Laser beam
+        if (laserActive && laserTimer > 0) {
+            ctx.fillStyle = 'cyan';
+            ctx.fillRect(player.x + player.width / 2 - 2, 0, 4, canvas.height);
+        }
+
+        // 🧍 Player
+        ctx.fillStyle = player.shielded ? 'aqua' : 'lime';
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+
+        // 💥 Bullets
+        ctx.fillStyle = 'white';
+        bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
+
+        // 👾 Enemies
+        enemies.forEach(e => {
+            if (e.type === 'fast') ctx.fillStyle = 'red';
+            else if (e.type === 'zigzag') ctx.fillStyle = 'orange';
+            else if (e.type === 'shielded') ctx.fillStyle = 'blue';
+            else ctx.fillStyle = 'gray';
+            ctx.fillRect(e.x, e.y, e.width, e.height);
+        });
+
+        // 🧠 Power-ups
+        powerUps.forEach(p => {
+            if (p.effect === 'speed') ctx.fillStyle = 'green';
+            else if (p.effect === 'double') ctx.fillStyle = 'purple';
+            else if (p.effect === 'score') ctx.fillStyle = 'gold';
+            ctx.fillRect(p.x, p.y, p.width, p.height);
+        });
+
+        // 🛡️ Shields
+        ctx.fillStyle = 'aqua';
+        shields.forEach(s => ctx.fillRect(s.x, s.y, s.width, s.height));
+
+        // 💣 Bombs
+        ctx.fillStyle = 'orange';
+        bombs.forEach(b => {
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // 🔫 Boss bullets
+        ctx.fillStyle = 'magenta';
+        bossBullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
+
+        // 🧟 Boss
+        if (boss) {
+            ctx.fillStyle = 'purple';
+            ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
+            ctx.fillStyle = 'white';
+            ctx.fillText("Boss HP: " + boss.health, boss.x + 10, boss.y + 20);
+        }
+
+        // 💥 Boss explosion
+        if (bossExplosion && bossExplosion.timer > 0) {
+            ctx.fillStyle = 'orange';
+            ctx.beginPath();
+            ctx.arc(bossExplosion.x + 90, bossExplosion.y + 30, 60 - bossExplosion.timer * 2, 0, Math.PI * 2);
+            ctx.fill();
+            bossExplosion.timer--;
+            if (bossExplosion.timer <= 0) bossExplosion = null;
+        }
+
+        // 🧾 Score, Health, Stage
+        ctx.fillStyle = 'yellow';
+        ctx.font = '16px Arial';
+        ctx.fillText("Score: " + score, 10, 20);
+        ctx.fillText("Health: " + player.health, 10, 40);
+        ctx.fillText("Stage: " + stage, 10, 60);
+        if (player.shielded) ctx.fillText("Shielded", 10, 80);
+        if (speedBoost) ctx.fillText("Speed Boost", 10, 100);
+        if (doubleBullets) ctx.fillText("Double Bullets", 10, 120);
+        if (scoreMultiplier > 1) ctx.fillText("Score x" + scoreMultiplier, 10, 140);
+        }
+
+        function loop() {
+        if (gameOverTriggered) {
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('pauseOverlay').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'block';
+            return;
+        }
+        if (!isPaused && gameStarted) {
+            update();
+            draw();
+        }
+        gameLoopId = requestAnimationFrame(loop);
+        }
+        </script>
+
+        <script>
+        // 🎁 Power-up spawner
+        function spawnPowerUp() {
+        const effects = ['speed', 'double', 'score'];
+        const effect = effects[Math.floor(Math.random() * effects.length)];
+        const x = Math.random() * (canvas.width - 30);
+        powerUps.push({ x, y: -30, width: 30, height: 30, speed: 2, effect });
+        }
+
+        // 🔄 Restart game
+        function restartGame() {
+            cancelAnimationFrame(gameLoopId);
+            gameStarted = true;
+            player = { x: 220, y: 580, width: 40, height: 20, health: 3, shielded: false };
+            bullets = [];
+            enemies = [];
+            shields = [];
+            powerUps = [];
+            boss = null;
+            bossBullets = [];
+            bombs = [];
+            score = 0;
+            stage = 1;
+            laserActive = false;
+            laserTimer = 0;
+            bossExplosion = null;
+            gameOverTriggered = false;
+            speedBoost = false;
+            doubleBullets = false;
+            scoreMultiplier = 1;
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('pauseOverlay').style.display = 'none';
+            gameLoopId = requestAnimationFrame(loop);
+        }
+
+        // 🕹️ Button logic
+        document.getElementById('pauseBtn').onclick = function () {
+        isPaused = !isPaused;
+        this.textContent = isPaused ? "Resume" : "Pause";
+        };
+
+        document.getElementById('autoFireBtn').onclick = function () {
+        autoFire = !autoFire;
+        this.textContent = "Auto-Fire: " + (autoFire ? "ON" : "OFF");
+        };
+
+        document.getElementById('laserBtn').onclick = function () {
+        laserActive = true;
+        laserTimer = 20;
+        laserSound.play();
+        };
+        document.getElementById('laserBtn').ontouchstart = fireLaser;
+        // 🚀 Start loop (only runs after Enter is pressed)
+        loop();
+        </script>
+        <script>
+        function togglePause() {
+            isPaused = !isPaused;
+        } 
+
+        function toggleAutoFire() {
+            autoFire = !autoFire;
+            document.querySelector('#controls button:nth-child(2)').textContent = `Auto-Fire: ${autoFire ? 'ON' : 'OFF'}`;
+        }
+
+        function fireLaser() {
+            if (gameStarted && !laserActive) {
+            laserActive = true;
+            laserTimer = 20;
+            if (laserSound) laserSound.play();
+            }
+        }
+        </script>
+
+            <div id="gameOverScreen" style="display:none;">
+                <h2 style="font-size:48px; color:#ff4444;">Game Over</h2>
+                <p id="finalScore" style="font-size:22px; color:#ffd700;"></p>
+                <button onclick="restartGame()" style="font-size:20px; margin-top:30px;">Restart</button>
+                <p style="color:white; font-size:18px;">Shortcuts: [R] Restart | [Enter] Start</p>
+            </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>© 2025 Sachin | Data Analyst Portfolio</p>
+            <div class="social-links">
+            <a href="https://www.linkedin.com/in/Sachin-Indian/" target="_blank">LinkedIn</a>
+            <a href="https://github.com/Sachin-Indian" target="_blank">GitHub</a>
+            </div>
+        </footer>
+
+        <!-- Game Logic -->
+        <script>
+            // Variables already declared above, do not redeclare here.
+
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // const laserSound = new Audio('laser.mp3');
+            laserSound.load();
+
+            function togglePause() {
+            isPaused = !isPaused;
+            }
+
+            function toggleAutoFire() {
+            autoFire = !autoFire;
+            document.querySelector('#controls button:nth-child(2)').textContent = `Auto-Fire: ${autoFire ? 'ON' : 'OFF'}`;
+            }
+
+            function fireLaser() {
+            if (gameStarted && !laserActive) {
+                laserActive = true;
+                laserTimer = 20;
+                laserSound.play();
+            }
+            }
+
+            function startGame() {
+                gameStarted = true;
+                document.getElementById('titleScreen').style.display = 'none';
+                document.getElementById('pauseOverlay').style.display = 'none';
+                document.getElementById('gameOverScreen').style.display = 'none';
+                cancelAnimationFrame(gameLoopId);
+                gameLoopId = requestAnimationFrame(loop);
+            }
+
+            function restartGame() {
+                cancelAnimationFrame(gameLoopId);
+                gameStarted = true;
+                player = { x: 220, y: 580, width: 40, height: 20, health: 3, shielded: false };
+                bullets = [];
+                enemies = [];
+                shields = [];
+                powerUps = [];
+                boss = null;
+                bossBullets = [];
+                bombs = [];
+                score = 0;
+                stage = 1;
+                laserActive = false;
+                laserTimer = 0;
+                bossExplosion = null;
+                gameOverTriggered = false;
+                speedBoost = false;
+                doubleBullets = false;
+                scoreMultiplier = 1;
+                document.getElementById('gameOverScreen').style.display = 'none';
+                document.getElementById('pauseOverlay').style.display = 'none';
+                gameLoopId = requestAnimationFrame(loop);
+            }
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !gameStarted) {
+                    startGame();
+                }
+                if (gameStarted && !gameOverTriggered) {
+                    if (e.key.toLowerCase() === 'p') {
+                        isPaused = !isPaused;
+                        document.getElementById('pauseOverlay').style.display = isPaused ? 'block' : 'none';
+                        document.getElementById('pauseBtn').textContent = isPaused ? 'Resume' : 'Pause';
+                    }
+                    if (e.key.toLowerCase() === 'a') {
+                        autoFire = !autoFire;
+                        document.getElementById('autoFireBtn').textContent = 'Auto-Fire' + (autoFire ? ' ON' : ' OFF');
+                    }
+                    if (e.key === ' ' && !laserActive) {
+                        fireLaser();
+                    }
+                }
+                if (gameOverTriggered && e.key.toLowerCase() === 'r') {
+                    restartGame();
+                }
+            });
+
+            function updateGame() {
+            if (laserActive) {
+                laserTimer--;
+                if (laserTimer <= 0) {
+                laserActive = false;
+                }
+            }
+      // Add your game logic here
+    }
+
+    function renderGame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Add your rendering logic here
+    }
+
+    // Optional: Mobile menu toggle if you want to activate it
+    document.getElementById('menuToggle').onclick = function () {
+      document.getElementById('navLinks').classList.toggle('active');
+    };
+
+    // Theme toggle
+    document.getElementById('themeToggle').onclick = function () {
+    document.body.classList.toggle('dark');
+     this.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    };
+  </script>
+</body>
+</html>
