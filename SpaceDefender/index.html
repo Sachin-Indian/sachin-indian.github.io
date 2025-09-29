@@ -183,16 +183,6 @@
     <div id="gameWrapper">
       <canvas id="gameCanvas" width="480" height="640"></canvas>
 
-      <!-- Mobile Touch Controls (hidden by default, shown only on mobile) -->
-      <div id="controls" style="display:none; position:absolute; bottom:10px; left:50%; transform:translateX(-50%); z-index:20; background:rgba(0,0,0,0.6); padding:8px; border-radius:8px; gap:8px; flex-wrap:wrap;">
-        <button id="leftBtn">←</button>
-        <button id="rightBtn">→</button>
-        <button id="laserBtn">Laser</button>
-        <button id="autoFireBtn">Auto-Fire ON</button>
-        <button id="pauseBtn">Pause</button>
-        <button id="restartBtn">Restart</button>
-      </div>
-
       <div id="titleScreen">
         <h1>🚀 Space Defender JS</h1>
         <p>A recruiter-ready arcade shooter built by Sachin</p>
@@ -276,46 +266,25 @@
         });
         document.addEventListener('keyup', e => keys[e.key] = false);
 
-        // Show/hide mobile controls based on device
-        function isMobile() {
-          return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        }
-        if (isMobile()) {
-          document.getElementById('controls').style.display = 'flex';
-        }
+        // Touch controls
+        canvas.addEventListener('touchstart', e => {
+        const touch = e.touches[0];
+        const x = touch.clientX;
+        if (x < canvas.width / 3) keys['ArrowLeft'] = true;
+        else if (x > canvas.width * 2 / 3) keys['ArrowRight'] = true;
+        else laserActive = true, laserTimer = 20, laserSound.play();
+        });
+        canvas.addEventListener('touchend', () => {
+        keys['ArrowLeft'] = false;
+        keys['ArrowRight'] = false;
+        });
 
-        // Touch controls for canvas (move left/right, fire laser)
-        if (isMobile()) {
-          canvas.addEventListener('touchstart', function(e) {
-            const rect = canvas.getBoundingClientRect();
-            const touch = e.touches[0];
-            const x = touch.clientX - rect.left;
-            if (x < rect.width / 3) keys['ArrowLeft'] = true;
-            else if (x > rect.width * 2 / 3) keys['ArrowRight'] = true;
-            else fireLaser();
-          });
-          canvas.addEventListener('touchend', function() {
-            keys['ArrowLeft'] = false;
-            keys['ArrowRight'] = false;
-          });
-
-          // Mobile control buttons
-          document.getElementById('leftBtn').ontouchstart = function() { keys['ArrowLeft'] = true; };
-          document.getElementById('leftBtn').ontouchend = function() { keys['ArrowLeft'] = false; };
-          document.getElementById('rightBtn').ontouchstart = function() { keys['ArrowRight'] = true; };
-          document.getElementById('rightBtn').ontouchend = function() { keys['ArrowRight'] = false; };
-          document.getElementById('laserBtn').ontouchstart = fireLaser;
-          document.getElementById('laserBtn').onclick = fireLaser;
-          document.getElementById('autoFireBtn').onclick = function() {
-            autoFire = !autoFire;
-            this.textContent = 'Auto-Fire ' + (autoFire ? 'ON' : 'OFF');
-          };
-          document.getElementById('pauseBtn').onclick = function() {
-            isPaused = !isPaused;
-            this.textContent = isPaused ? 'Resume' : 'Pause';
-          };
-          document.getElementById('restartBtn').onclick = restartGame;
-        }
+        // Laser button for mobile
+        document.getElementById('laserBtn').onclick = () => {
+        laserActive = true;
+        laserTimer = 20;
+        laserSound.play();
+        };
 
         // Starfield background
         for (let i = 0; i < 100; i++) {
